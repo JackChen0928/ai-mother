@@ -6,6 +6,7 @@ import cn.hutool.core.util.StrUtil;
 import com.yupi.yuaicodemother.ai.model.enums.CodeGenTypeEnum;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 
 /**
  * 抽象类，定义了保存代码的模板方法
@@ -65,6 +66,7 @@ public abstract class CodeFileSaverTemplate<T> {
     protected final void writeToFile(String dirPath,String filename, String content){
         if(StrUtil.isNotBlank(content)){
             String filePath = dirPath + File.separator + filename;
+            FileUtil.writeString(content,filePath, StandardCharsets.UTF_8);
         }
     }
 
