@@ -4,6 +4,8 @@ import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yupi.yuaicodemother.ai.model.enums.CodeGenTypeEnum;
+import com.yupi.yuaicodemother.exception.BusinessException;
+import com.yupi.yuaicodemother.exception.ErrorCode;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
@@ -16,15 +18,15 @@ public abstract class CodeFileSaverTemplate<T> {
     protected static final String FILE_SAVE_ROOT_DIR = System.getProperty("user.dir") + "/tmp/code_output";
 
     /**
-     * 模版方法：保存代码的标准流程
+     * 模版方法：保存代码的标准流程(使用appId)
      * @param codeResult
      * @return
      */
-    public final File saveCode(T codeResult){
+    public final File saveCode(T codeResult,Long appId){
         //1.验证输入
         validateInput(codeResult);
         //2.构建生成唯一目录
-        String baseDirPath = buildUniqueDir();
+        String baseDirPath = buildUniqueDir(appId);
         //3.保存文件（具体实现由子类提供）
         saveFiles(codeResult, baseDirPath);
         //4.返回目录文件对象
@@ -43,11 +45,15 @@ public abstract class CodeFileSaverTemplate<T> {
 
     /**
      * 2.构建生成唯一目录（可由子类覆盖）
+     * @param appId 应用ID
      */
-    protected final String buildUniqueDir(){
+    protected final String buildUniqueDir(Long appId){
+        if (appId == null){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"appId不能为空");
+        }
         String codeType = getCodeType().getValue();
         //生成唯一目录名称(类型+唯一雪花id)
-        String uniqueDirName = StrUtil.format("{}_{}", codeType, IdUtil.getSnowflakeNextIdStr());
+        String uniqueDirName = StrUtil.format("{}_{}", codeType,appId);
         String dirPath = FILE_SAVE_ROOT_DIR + File.separator + uniqueDirName;
         FileUtil.mkdir(dirPath);
         return dirPath;
